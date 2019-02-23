@@ -1,0 +1,16 @@
+[twitch]
+    client_id = ""
+    client_secret = ""
+    redirect_url = "http://localhost:8080/twitch/callback"
+    scopes = ["user_read"]
+    cookie = "twitch"
+
+[destinygg]
+    client_id = ""
+    client_secret = ""
+    redirect_url = "http://localhost:8080/dgg/callback"
+    cookie = "destinygg"
+
+[server]
+    address = ":8080"
+    jwt_secret = "weeeeeeeeeeeeewooooooooooo69"

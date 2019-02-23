@@ -1,0 +1,27 @@
+.bg-dark {
+  background-color: #212121 !important;
+  color: #ffffff;
+}
+
+.list-dark:hover {
+  background-color: #18283c !important;
+  color: #ffffff;
+}
+
+html,
+body {
+  background-color: #323232;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.twitch {
+  background-color: #6441a4;
+  border: #6441a4 1px;
+  color: white;
+}
+
+.twitch:hover {
+  background-color: #7d5bbe;
+  border: #7d5bbe 1px;
+  color: white;
+}
