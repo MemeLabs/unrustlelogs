@@ -13,3 +13,6 @@
 
 # configs
 config.toml
+
+# database files
+*.db
