@@ -1,0 +1,9 @@
+version: "3"
+services:
+  base:
+    build: .
+    container_name: unrustlelogs
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - /var/unrustlelogs:/data

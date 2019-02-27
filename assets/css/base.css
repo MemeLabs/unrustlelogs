@@ -1,16 +1,19 @@
 .bg-dark {
-  background-color: #212121 !important;
+  background-color: #2b2a2a !important;
   color: #ffffff;
 }
 
-.list-dark:hover {
-  background-color: #18283c !important;
-  color: #ffffff;
+.list-group-item {
+  margin-bottom: 0;
+  background-color: #2b2a2a;
+  border: 0;
+  border-bottom: 1px solid #ff5722 !important;
+  color: white;
 }
 
 html,
 body {
-  background-color: #323232;
+  background-color: #212121;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -24,4 +27,8 @@ body {
   background-color: #7d5bbe;
   border: #7d5bbe 1px;
   color: white;
+}
+
+.card {
+  border: #ff5722 2px !important;
 }

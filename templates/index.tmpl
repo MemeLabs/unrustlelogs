@@ -43,6 +43,12 @@
                             {{ end }}
                         </div>
                     </div>
+                    {{ if .Twitch.LoggedIn }}
+                        <div class="card-footer text-muted">
+                            <p>Send the text below to support@overrustlelogs.net</p>
+                            {{ .Twitch.Cookie }}
+                        </div>
+                    {{ end }}
                 </div>
                 <div class="card text-white bg-dark">
                     <div class="card-header">
@@ -67,6 +73,12 @@
                             {{ end }}
                         </div>
                     </div>
+                    {{ if .Destinygg.LoggedIn }}
+                        <div class="card-footer text-muted">
+                            <p>Send the text below to support@overrustlelogs.net</p>
+                            {{ .Destinygg.Cookie }}
+                        </div>
+                    {{ end }}
                 </div>
             </div>
         </div>

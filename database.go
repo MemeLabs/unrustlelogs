@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -16,12 +17,17 @@ type User struct {
 
 	Service string
 	Name    string
+	Email   string
 }
 
 // NewDatabase ...
 func (ur *UnRustleLogs) NewDatabase() {
+	file := "/data/users.db"
+	if runtime.GOOS == "windows" {
+		file = "users.db"
+	}
 	var err error
-	ur.db, err = gorm.Open("sqlite3", "users.db")
+	ur.db, err = gorm.Open("sqlite3", file)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -30,12 +36,13 @@ func (ur *UnRustleLogs) NewDatabase() {
 }
 
 // AddUser ...
-func (ur *UnRustleLogs) AddUser(name, service string) {
+func (ur *UnRustleLogs) AddUser(name, email, service string) {
 	if ur.UserInDatabase(name, service) {
 		return
 	}
 	ur.db.Create(&User{
 		Name:    name,
+		Email:   email,
 		Service: service,
 	})
 }

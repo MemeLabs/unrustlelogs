@@ -115,7 +115,6 @@ func main() {
 		logrus.Fatal("Server Shutdown:", err)
 	}
 	logrus.Info("Server exiting")
-
 }
 
 // NewUnRustleLogs ...
@@ -134,11 +133,13 @@ type Payload struct {
 		Email      string
 		LoggedIn   bool
 		IsDeleting bool
+		Cookie     string
 	}
 	Destinygg struct {
 		Name       string
 		LoggedIn   bool
 		IsDeleting bool
+		Cookie     string
 	}
 	DeleteStatus string
 }
@@ -153,12 +154,14 @@ func (ur *UnRustleLogs) indexHandler(c *gin.Context) {
 		payload.Twitch.Email = twitch.Email
 		payload.Twitch.LoggedIn = true
 		payload.Twitch.IsDeleting = ur.UserInDatabase(twitch.Name, TWITCHSERVICE)
+		payload.Twitch.Cookie, _ = c.Cookie(ur.config.Twitch.Cookie)
 	}
 	dgg, ok := ur.getUser(c, ur.config.Destinygg.Cookie)
 	if ok {
 		payload.Destinygg.Name = dgg.DisplayName
 		payload.Destinygg.LoggedIn = true
 		payload.Destinygg.IsDeleting = ur.UserInDatabase(dgg.Name, DESTINYGGSERVICE)
+		payload.Destinygg.Cookie, _ = c.Cookie(ur.config.Destinygg.Cookie)
 	}
 	if s := c.Query("delete"); s != "" {
 		payload.DeleteStatus = s
@@ -175,8 +178,9 @@ func (ur *UnRustleLogs) deleteHandler(service string) func(*gin.Context) {
 			})
 			return
 		}
-		logrus.Infof("%s requested log deletion", user.(*jwtClaims).DisplayName)
-		ur.AddUser(user.(*jwtClaims).Name, service)
+		u := user.(*jwtClaims)
+		logrus.Infof("%q requested log deletion", u.DisplayName)
+		ur.AddUser(u.Name, u.Email, service)
 		c.Redirect(http.StatusFound, "/?delete=true")
 	}
 }
