@@ -83,6 +83,7 @@ func (ur *UnRustleLogs) DestinyggCallbackHandle(c *gin.Context) {
 		return
 	}
 
+	ur.AddUser(claims)
 	c.SetCookie(ur.config.Destinygg.Cookie, t, 604800, "/", fmt.Sprintf("%s", c.Request.Host), c.Request.URL.Scheme == "https", false)
 	c.Redirect(http.StatusFound, "/")
 }

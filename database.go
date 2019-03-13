@@ -15,9 +15,10 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Service string
-	Name    string
-	Email   string
+	Service     string
+	Name        string
+	DisplayName string
+	Email       string
 }
 
 // NewDatabase ...
@@ -36,14 +37,15 @@ func (ur *UnRustleLogs) NewDatabase() {
 }
 
 // AddUser ...
-func (ur *UnRustleLogs) AddUser(name, email, service string) {
-	if ur.UserInDatabase(name, service) {
+func (ur *UnRustleLogs) AddUser(claims *jwtClaims) {
+	if ur.UserInDatabase(claims.Name, claims.Service) {
 		return
 	}
 	ur.db.Create(&User{
-		Name:    name,
-		Email:   email,
-		Service: service,
+		Name:        claims.Name,
+		DisplayName: claims.DisplayName,
+		Email:       claims.Email,
+		Service:     claims.Service,
 	})
 }
 

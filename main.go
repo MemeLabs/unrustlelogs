@@ -68,8 +68,6 @@ func main() {
 		twitch.GET("/login", rustle.TwitchLoginHandle)
 		twitch.GET("/logout", rustle.TwitchLogoutHandle)
 		twitch.GET("/callback", rustle.TwitchCallbackHandle)
-		twitch.GET("/delete", rustle.jwtMiddleware(rustle.deleteHandler(TWITCHSERVICE), rustle.config.Twitch.Cookie))
-		twitch.GET("/undelete", rustle.jwtMiddleware(rustle.undeleteHandler(TWITCHSERVICE), rustle.config.Twitch.Cookie))
 	}
 
 	dgg := router.Group("/dgg")
@@ -77,8 +75,6 @@ func main() {
 		dgg.GET("/login", rustle.DestinyggLoginHandle)
 		dgg.GET("/logout", rustle.DestinyggLogoutHandle)
 		dgg.GET("/callback", rustle.DestinyggCallbackHandle)
-		dgg.GET("/delete", rustle.jwtMiddleware(rustle.deleteHandler(DESTINYGGSERVICE), rustle.config.Destinygg.Cookie))
-		dgg.GET("/undelete", rustle.jwtMiddleware(rustle.undeleteHandler(DESTINYGGSERVICE), rustle.config.Destinygg.Cookie))
 	}
 
 	router.Static("/assets", "./assets")
@@ -91,7 +87,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	logrus.Infof("starting server :%s", rustle.config.Server.Address)
+	logrus.Infof("starting server adress: %q", rustle.config.Server.Address)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Error(err)
@@ -180,7 +176,7 @@ func (ur *UnRustleLogs) deleteHandler(service string) func(*gin.Context) {
 		}
 		u := user.(*jwtClaims)
 		logrus.Infof("%q requested log deletion", u.DisplayName)
-		ur.AddUser(u.Name, u.Email, service)
+		ur.AddUser(u)
 		c.Redirect(http.StatusFound, "/?delete=true")
 	}
 }

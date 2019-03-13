@@ -31,11 +31,6 @@
                         <div class="text-center">
                             {{ if .Twitch.LoggedIn }}
                                 <div class="btn-group" role="group">
-                                    {{ if not .Twitch.IsDeleting }}
-                                        <a href="/twitch/delete" role="button" class="btn btn-danger">Delete</a>
-                                    {{ else }}
-                                        <a href="/twitch/undelete" role="button" class="btn btn-success">Stop deleting</a>
-                                    {{ end }}
                                     <a href="/twitch/logout" role="button" class="btn btn-dark">Logout</a>
                                 </div>
                             {{ else }}
@@ -45,7 +40,7 @@
                     </div>
                     {{ if .Twitch.LoggedIn }}
                         <div class="card-footer text-muted">
-                            <p>Send the text below to support@overrustlelogs.net</p>
+                            <p>After requesting deletion, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
                             {{ .Twitch.Cookie }}
                         </div>
                     {{ end }}
@@ -61,11 +56,6 @@
                         <div class="text-center">
                             {{ if .Destinygg.LoggedIn }}
                                 <div class="btn-group" role="group">
-                                    {{ if not .Destinygg.IsDeleting }}
-                                        <a href="/dgg/delete" role="button" class="btn btn-danger">Delete</a>
-                                    {{ else }}
-                                        <a href="/dgg/undelete" role="button" class="btn btn-success">Stop deleting</a>
-                                    {{ end }}
                                     <a href="/dgg/logout" role="button" class="btn btn-dark">Logout</a>
                                 </div>
                             {{ else }}
@@ -75,7 +65,7 @@
                     </div>
                     {{ if .Destinygg.LoggedIn }}
                         <div class="card-footer text-muted">
-                            <p>Send the text below to support@overrustlelogs.net</p>
+                            <p>After requesting deletion, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
                             {{ .Destinygg.Cookie }}
                         </div>
                     {{ end }}
