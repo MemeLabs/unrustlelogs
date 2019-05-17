@@ -63,6 +63,9 @@ func main() {
 
 	router.GET("/", rustle.indexHandler)
 	router.GET("/verify", rustle.verifyHandler)
+	router.GET("/robots.txt", func(c *gin.Context) {
+		c.String(200, "User-agent: *\nDisallow: /")
+	})
 
 	twitch := router.Group("/twitch")
 	{
