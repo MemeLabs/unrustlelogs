@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,8 +35,6 @@ type state struct {
 }
 
 const (
-	// TITLE ...
-	TITLE = "UnRustleLogs"
 	// TWITCHSERVICE ...
 	TWITCHSERVICE = "twtch"
 	// DESTINYGGSERVICE ...
@@ -62,6 +61,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	router.GET("/", rustle.indexHandler)
+	router.GET("/verify", rustle.verifyHandler)
 
 	twitch := router.Group("/twitch")
 	{
@@ -123,81 +123,67 @@ func NewUnRustleLogs() *UnRustleLogs {
 
 // Payload ...
 type Payload struct {
-	Title  string
 	Twitch struct {
-		Name       string
-		Email      string
-		LoggedIn   bool
-		IsDeleting bool
-		Cookie     string
+		Name     string
+		Email    string
+		LoggedIn bool
+		Cookie   string
 	}
 	Destinygg struct {
-		Name       string
-		LoggedIn   bool
-		IsDeleting bool
-		Cookie     string
+		Name     string
+		LoggedIn bool
+		Cookie   string
 	}
-	DeleteStatus string
 }
 
 func (ur *UnRustleLogs) indexHandler(c *gin.Context) {
-	payload := Payload{
-		Title: TITLE,
-	}
+	payload := Payload{}
 	twitch, ok := ur.getUser(c, ur.config.Twitch.Cookie)
 	if ok {
 		payload.Twitch.Name = twitch.DisplayName
 		payload.Twitch.Email = twitch.Email
 		payload.Twitch.LoggedIn = true
-		payload.Twitch.IsDeleting = ur.UserInDatabase(twitch.Name, TWITCHSERVICE)
 		payload.Twitch.Cookie, _ = c.Cookie(ur.config.Twitch.Cookie)
 	}
 	dgg, ok := ur.getUser(c, ur.config.Destinygg.Cookie)
 	if ok {
 		payload.Destinygg.Name = dgg.DisplayName
 		payload.Destinygg.LoggedIn = true
-		payload.Destinygg.IsDeleting = ur.UserInDatabase(dgg.Name, DESTINYGGSERVICE)
 		payload.Destinygg.Cookie, _ = c.Cookie(ur.config.Destinygg.Cookie)
-	}
-	if s := c.Query("delete"); s != "" {
-		payload.DeleteStatus = s
 	}
 	c.HTML(http.StatusOK, "index.tmpl", payload)
 }
 
-func (ur *UnRustleLogs) deleteHandler(service string) func(*gin.Context) {
-	return func(c *gin.Context) {
-		user, ok := c.Get("user")
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Unauthorized",
-			})
-			return
-		}
-		u := user.(*jwtClaims)
-		logrus.Infof("%q requested log deletion", u.DisplayName)
-		ur.AddUser(u)
-		c.Redirect(http.StatusFound, "/?delete=true")
-	}
+// VerifyPayload ...
+type VerifyPayload struct {
+	ID      string
+	Name    string
+	Email   string
+	Valid   bool
+	JWT     string
+	Service string
 }
 
-func (ur *UnRustleLogs) undeleteHandler(service string) func(*gin.Context) {
-	return func(c *gin.Context) {
-		user, ok := c.Get("user")
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Unauthorized",
-			})
-			return
+func (ur *UnRustleLogs) verifyHandler(c *gin.Context) {
+	payload := VerifyPayload{}
+	if jwtQuery := c.Query("jwt"); jwtQuery != "" {
+		jwtQuery = strings.TrimSpace(jwtQuery)
+		claims, ok := ur.parseJWT(jwtQuery)
+		if ok {
+			payload.ID = claims.ID
+			payload.Name = claims.Name
+			payload.Email = claims.Email
+			payload.JWT = jwtQuery
+			payload.Valid = true
+			payload.Service = claims.Service
 		}
-		logrus.Infof("%s requested to stop log deletion", user.(*jwtClaims).DisplayName)
-		ur.DeleteUser(user.(*jwtClaims).Name, service)
-		c.Redirect(http.StatusFound, "/?delete=false")
 	}
+
+	c.HTML(http.StatusOK, "verify.tmpl", payload)
 }
 
-func (ur *UnRustleLogs) getUser(c *gin.Context, cookie string) (*jwtClaims, bool) {
-	cookie, err := c.Cookie(cookie)
+func (ur *UnRustleLogs) getUser(c *gin.Context, cookiename string) (*jwtClaims, bool) {
+	cookie, err := c.Cookie(cookiename)
 	if err != nil {
 		return nil, false
 	}
@@ -207,6 +193,21 @@ func (ur *UnRustleLogs) getUser(c *gin.Context, cookie string) (*jwtClaims, bool
 	if err != nil {
 		logrus.Error(err)
 		ur.deleteCookie(c, cookie)
+		return nil, false
+	}
+
+	if claims, ok := token.Claims.(*jwtClaims); ok && token.Valid {
+		return claims, true
+	}
+	return nil, false
+}
+
+func (ur *UnRustleLogs) parseJWT(jwtString string) (*jwtClaims, bool) {
+	token, err := jwt.ParseWithClaims(jwtString, &jwtClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(ur.config.Server.JWTSecret), nil
+	})
+	if err != nil {
+		logrus.Error(err)
 		return nil, false
 	}
 
@@ -262,6 +263,7 @@ func (ur *UnRustleLogs) addDggState(s, verifier string) {
 		service:  TWITCHSERVICE,
 		time:     time.Now().UTC(),
 	}
+	// delete dgg state after 5 minutes
 	go func() {
 		time.Sleep(time.Minute * 5)
 		ur.deleteDggState(s)

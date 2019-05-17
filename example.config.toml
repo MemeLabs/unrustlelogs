@@ -12,5 +12,5 @@
     cookie = "destinygg"
 
 [server]
-    address = ":8080"
+    address = ":8396"
     jwt_secret = "weeeeeeeeeeeeewooooooooooo69"

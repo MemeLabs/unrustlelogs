@@ -4,21 +4,6 @@
     <body>
         {{ template "navbar" . }}
         <div class="container my-3">
-            {{ if eq .DeleteStatus "true" }}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    your logs will be deleted on the 1st each month
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {{ else if eq .DeleteStatus "false" }}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    your logs will no longer be deleted on the 1st each month
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {{ end }}
             <div class="card-deck text-center">
                 <div class="card text-white bg-dark" >
                     <div class="card-header">
@@ -26,9 +11,6 @@
                         Twitch.tv {{ if .Twitch.LoggedIn }} - {{ .Twitch.Name }} {{ end }}
                     </div>
                     <div class="card-body">
-                        {{ if .Twitch.IsDeleting }}
-                            <p>Deleting logs on the 1st next month</p>
-                        {{ end }}
                         <div class="text-center">
                             {{ if .Twitch.LoggedIn }}
                                 <div class="btn-group" role="group">
@@ -41,7 +23,7 @@
                     </div>
                     {{ if .Twitch.LoggedIn }}
                         <div class="card-footer text-muted">
-                            <p>After requesting deletion, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                            <p>After logging in, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
                             {{ .Twitch.Cookie }}
                         </div>
                     {{ end }}
@@ -51,9 +33,6 @@
                         Destiny.gg {{ if .Destinygg.LoggedIn }} - {{ .Destinygg.Name }} {{ end }}
                     </div>
                     <div class="card-body">
-                        {{ if .Destinygg.IsDeleting }}
-                            <p>Deleting logs on the 1st next month</p>
-                        {{ end }}
                         <div class="text-center">
                             {{ if .Destinygg.LoggedIn }}
                                 <div class="btn-group" role="group">
@@ -66,7 +45,7 @@
                     </div>
                     {{ if .Destinygg.LoggedIn }}
                         <div class="card-footer text-muted">
-                            <p>After requesting deletion, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                            <p>After logging in, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
                             {{ .Destinygg.Cookie }}
                         </div>
                     {{ end }}
