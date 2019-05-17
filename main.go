@@ -52,6 +52,7 @@ type jwtClaims struct {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	rustle := NewUnRustleLogs()
 	rustle.LoadConfig("config.toml")
 
