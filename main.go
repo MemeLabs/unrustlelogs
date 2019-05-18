@@ -54,6 +54,10 @@ func main() {
 	rustle.LoadConfig("config.toml")
 
 	rustle.NewDatabase()
+	err := rustle.setupTwitchClient()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")

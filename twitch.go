@@ -2,20 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/nicklaw5/helix"
 )
 
 // TwitchUser ...
@@ -43,31 +41,21 @@ type oauthResponse struct {
 
 var twitchHTTPClient = http.Client{}
 
-func (ur *UnRustleLogs) getOauthToken(code string) (*oauthResponse, error) {
-	oauthAPI, _ := url.Parse("https://id.twitch.tv/oauth2/token")
+var twitchClient *helix.Client
 
-	query := fmt.Sprintf("client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
-		ur.config.Twitch.ClientID,
-		ur.config.Twitch.ClientSecret,
-		code,
-		ur.config.Twitch.RedirectURL,
-	)
-	oauthAPI.RawQuery = query
-	response, err := twitchHTTPClient.Post(oauthAPI.String(), "", nil)
+func (ur *UnRustleLogs) setupTwitchClient() error {
+	client, err := helix.NewClient(&helix.Options{
+		ClientID:     ur.config.Twitch.ClientID,
+		ClientSecret: ur.config.Twitch.ClientSecret,
+		RedirectURI:  ur.config.Twitch.RedirectURL,
+		Scopes:       ur.config.Twitch.Scopes,
+	})
 	if err != nil {
-		return nil, errors.New("failed getting oauth")
+		logrus.Error(err)
+		return err
 	}
-
-	oauthBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	var oauth oauthResponse
-	err = json.Unmarshal(oauthBody, &oauth)
-	if err != nil {
-		return nil, errors.New(err.Error())
-	}
-	return &oauth, nil
+	twitchClient = client
+	return nil
 }
 
 func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*TwitchUser, error) {
@@ -103,18 +91,13 @@ func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*TwitchUser, er
 
 // TwitchLoginHandle ...
 func (ur *UnRustleLogs) TwitchLoginHandle(c *gin.Context) {
-	twitchURL := "https://id.twitch.tv/oauth2/authorize"
 	state := uniuri.New()
 	ur.addTwitchState(state)
-	s := fmt.Sprintf("%s?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&force_verify=true&state=%s",
-		twitchURL,
-		ur.config.Twitch.ClientID,
-		ur.config.Twitch.RedirectURL,
-		strings.Join(ur.config.Twitch.Scopes, ","),
-		state,
-	)
-	c.Header("Location", s)
-	c.Redirect(http.StatusFound, s)
+
+	url := twitchClient.GetAuthorizationURL(state, true)
+
+	c.Header("Location", url)
+	c.Redirect(http.StatusFound, url)
 }
 
 // TwitchLogoutHandle ...
@@ -146,15 +129,16 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 		return
 	}
 
-	oauth, err := ur.getOauthToken(code)
+	oauth, err := twitchClient.GetUserAccessToken(code)
 	if err != nil {
-		log.Println(err)
+		logrus.Error(err)
 		c.String(http.StatusUnauthorized, "Failed to get token from OAuth exchange code")
 		return
 	}
 
-	user, err := ur.getUserByOAuthToken(oauth.AccessToken)
+	user, err := ur.getUserByOAuthToken(oauth.Data.AccessToken)
 	if err != nil {
+		logrus.Error(err)
 		c.String(http.StatusServiceUnavailable, "Twitch API failure while retrieving user")
 		return
 	}
@@ -175,6 +159,7 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 	// Generate encoded token and send it as response.
 	t, err := token.SignedString([]byte(ur.config.Server.JWTSecret))
 	if err != nil {
+		logrus.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed signing jwt"})
 		return
 	}
