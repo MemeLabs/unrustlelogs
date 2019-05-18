@@ -13,6 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -169,7 +170,13 @@ func (ur *UnRustleLogs) verifyHandler(c *gin.Context) {
 	payload := VerifyPayload{}
 	if id := c.Query("id"); id != "" {
 		id = strings.TrimSpace(id)
-		user, ok := ur.GetUser(id)
+		// make sure the uuid is valid
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			c.HTML(http.StatusBadRequest, "verify.tmpl", payload)
+			return
+		}
+		user, ok := ur.GetUser(uid.String())
 		if !ok {
 			c.HTML(http.StatusBadRequest, "verify.tmpl", payload)
 			return
@@ -179,7 +186,7 @@ func (ur *UnRustleLogs) verifyHandler(c *gin.Context) {
 		payload.Email = user.Email
 		payload.Valid = true
 		payload.Service = user.Service
-		payload.ID = id
+		payload.ID = uid.String()
 	}
 
 	c.HTML(http.StatusOK, "verify.tmpl", payload)
