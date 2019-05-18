@@ -13,6 +13,8 @@ github.com/gin-gonic/gin/internal/json
 github.com/gin-gonic/gin/render
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
 # github.com/jinzhu/gorm v1.9.8
 github.com/jinzhu/gorm
 github.com/jinzhu/gorm/dialects/sqlite
@@ -30,8 +32,12 @@ github.com/mattn/go-sqlite3
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
+# github.com/nicklaw5/helix v0.5.1
+github.com/nicklaw5/helix
 # github.com/sirupsen/logrus v1.4.1
 github.com/sirupsen/logrus
+# github.com/ugorji/go v1.1.4
+github.com/ugorji/go/codec
 # golang.org/x/sys v0.0.0-20190516110030-61b9204099cb
 golang.org/x/sys/unix
 # gopkg.in/go-playground/validator.v8 v8.18.2
