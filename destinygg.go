@@ -66,7 +66,8 @@ func (ur *UnRustleLogs) DestinyggCallbackHandle(c *gin.Context) {
 	claims := &jwtClaims{
 		id,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 730).Unix(),
+			// 1 month expire
+			ExpiresAt: time.Now().Add((time.Hour * 24) * 31).Unix(),
 		},
 	}
 

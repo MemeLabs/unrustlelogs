@@ -207,6 +207,14 @@ func (ur *UnRustleLogs) getUserFromJWT(c *gin.Context, cookiename string) (*User
 	}
 
 	if claims, ok := token.Claims.(*jwtClaims); ok && token.Valid {
+		// idk if i have to manually check if the jwt is expired or not
+		// might be that .Valid is only true if it's not expired also
+		now := time.Now()
+		expires := time.Unix(claims.ExpiresAt, 0)
+		if now.After(expires) {
+			ur.deleteCookie(c, cookie)
+			return nil, false
+		}
 		return ur.GetUser(claims.ID)
 	}
 	return nil, false
@@ -225,44 +233,6 @@ func (ur *UnRustleLogs) parseJWT(jwtString string) (*jwtClaims, bool) {
 		return claims, true
 	}
 	return nil, false
-}
-
-func (ur *UnRustleLogs) jwtMiddleware(fn func(*gin.Context), cookie string) func(*gin.Context) {
-	return func(c *gin.Context) {
-		cookie, err := c.Cookie(cookie)
-		if err != nil {
-			logrus.Error(err)
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Unauthorized",
-			})
-			return
-		}
-		token, err := jwt.ParseWithClaims(cookie, &jwtClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(ur.config.Server.JWTSecret), nil
-		})
-		if err != nil {
-			logrus.Error(err)
-			ur.deleteCookie(c, cookie)
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "error",
-			})
-			return
-		}
-
-		if claims, ok := token.Claims.(*jwtClaims); ok && token.Valid {
-			c.Set("user", claims)
-			fn(c)
-		} else {
-			switch cookie {
-			case ur.config.Twitch.Cookie:
-				c.Redirect(http.StatusTemporaryRedirect, "/twitch/logout")
-			case ur.config.Destinygg.Cookie:
-				c.Redirect(http.StatusTemporaryRedirect, "/dgg/logout")
-			default:
-				c.Redirect(http.StatusTemporaryRedirect, "/")
-			}
-		}
-	}
 }
 
 func (ur *UnRustleLogs) addDggState(s, verifier string) {
