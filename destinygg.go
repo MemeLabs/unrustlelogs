@@ -61,13 +61,10 @@ func (ur *UnRustleLogs) DestinyggCallbackHandle(c *gin.Context) {
 		return
 	}
 
+	id := ur.AddDggUser(user)
 	// Set custom claims
 	claims := &jwtClaims{
-		user.UserID,
-		user.Username,
-		"",
-		user.Nick,
-		DESTINYGGSERVICE,
+		id,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 730).Unix(),
 		},
@@ -83,7 +80,7 @@ func (ur *UnRustleLogs) DestinyggCallbackHandle(c *gin.Context) {
 		return
 	}
 
-	ur.AddUser(claims)
+	ur.AddDggUser(user)
 	c.SetCookie(ur.config.Destinygg.Cookie, t, 604800, "/", fmt.Sprintf("%s", c.Request.Host), c.Request.URL.Scheme == "https", false)
 	c.Redirect(http.StatusFound, "/")
 }
@@ -133,8 +130,8 @@ func (ur *UnRustleLogs) getDggAccessToken(code, verifier string) (*DGGAccessToke
 	return &accessToken, nil
 }
 
-// DGGUserinfoResponse ...
-type DGGUserinfoResponse struct {
+// DestinyggUser ...
+type DestinyggUser struct {
 	CreatedDate string   `json:"createdDate"`
 	Features    []string `json:"features"`
 	Nick        string   `json:"nick"`
@@ -145,7 +142,7 @@ type DGGUserinfoResponse struct {
 	Username string `json:"username"`
 }
 
-func (ur *UnRustleLogs) getDggUser(accessToken string) (*DGGUserinfoResponse, error) {
+func (ur *UnRustleLogs) getDggUser(accessToken string) (*DestinyggUser, error) {
 	dggURL := fmt.Sprintf("https://destiny.gg/api/userinfo?token=%s", accessToken)
 	response, err := http.Get(dggURL)
 	if err != nil {
@@ -157,7 +154,7 @@ func (ur *UnRustleLogs) getDggUser(accessToken string) (*DGGUserinfoResponse, er
 	if err != nil {
 		return nil, err
 	}
-	var userinfo DGGUserinfoResponse
+	var userinfo DestinyggUser
 	err = json.Unmarshal(body, &userinfo)
 	if err != nil {
 		return nil, err

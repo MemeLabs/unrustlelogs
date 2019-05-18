@@ -23,8 +23,8 @@
                     </div>
                     {{ if .Twitch.LoggedIn }}
                         <div class="card-footer">
-                            <p class="text-muted">After logging in, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
-                            {{ .Twitch.Cookie }}
+                            <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                            <a href="/verify?id={{ .Twitch.ID }}">{{ .Twitch.ID }}</a>
                         </div>
                     {{ end }}
                 </div>
@@ -45,8 +45,8 @@
                     </div>
                     {{ if .Destinygg.LoggedIn }}
                         <div class="card-footer">
-                            <p class="text-muted">After logging in, you need to also email the text below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
-                            {{ .Destinygg.Cookie }}
+                            <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                            <a href="/verify?id={{ .Destinygg.ID }}">{{ .Destinygg.ID }}</a>
                         </div>
                     {{ end }}
                 </div>

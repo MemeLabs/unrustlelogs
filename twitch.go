@@ -18,8 +18,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// UserResponse ...
-type userResponse struct {
+// TwitchUser ...
+type TwitchUser struct {
 	ID            string    `json:"_id"`
 	Bio           string    `json:"bio"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -70,7 +70,7 @@ func (ur *UnRustleLogs) getOauthToken(code string) (*oauthResponse, error) {
 	return &oauth, nil
 }
 
-func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*userResponse, error) {
+func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*TwitchUser, error) {
 	userAPI := "https://api.twitch.tv/kraken/user"
 	req, err := http.NewRequest("GET", userAPI, nil)
 	if err != nil {
@@ -92,7 +92,7 @@ func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*userResponse, 
 	if err != nil {
 		return nil, err
 	}
-	var user userResponse
+	var user TwitchUser
 
 	err = json.Unmarshal(body, &user)
 	if err != nil {
@@ -158,13 +158,11 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 		c.String(http.StatusServiceUnavailable, "Twitch API failure while retrieving user")
 		return
 	}
+
+	id := ur.AddTwitchUser(user)
 	// Set custom claims
 	claims := &jwtClaims{
-		user.ID,
-		user.Name,
-		user.Email,
-		user.DisplayName,
-		TWITCHSERVICE,
+		id,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 730).Unix(),
 		},
@@ -180,7 +178,6 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 		return
 	}
 
-	ur.AddUser(claims)
 	c.SetCookie(ur.config.Twitch.Cookie, t, 604800, "/", fmt.Sprintf("%s", c.Request.Host), c.Request.URL.Scheme == "https", false)
 	c.Redirect(http.StatusFound, "/")
 }

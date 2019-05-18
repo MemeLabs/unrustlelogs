@@ -32,3 +32,11 @@ body {
 .card {
   border: #ff5722 2px !important;
 }
+
+a {
+  color: #ff5722;
+}
+
+a:hover {
+  color: #ff8965;
+}

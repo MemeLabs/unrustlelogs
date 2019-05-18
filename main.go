@@ -36,18 +36,14 @@ type state struct {
 
 const (
 	// TWITCHSERVICE ...
-	TWITCHSERVICE = "twtch"
+	TWITCHSERVICE = "twitch"
 	// DESTINYGGSERVICE ...
 	DESTINYGGSERVICE = "destinygg"
 )
 
 // jwtCustomClaims are custom claims extending default ones.
 type jwtClaims struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	DisplayName string `json:"displayName"`
-	Service     string `json:"service"`
+	ID string `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -128,65 +124,68 @@ func NewUnRustleLogs() *UnRustleLogs {
 // Payload ...
 type Payload struct {
 	Twitch struct {
+		ID       string
 		Name     string
 		Email    string
 		LoggedIn bool
-		Cookie   string
 	}
 	Destinygg struct {
+		ID       string
 		Name     string
 		LoggedIn bool
-		Cookie   string
 	}
 }
 
 func (ur *UnRustleLogs) indexHandler(c *gin.Context) {
 	payload := Payload{}
-	twitch, ok := ur.getUser(c, ur.config.Twitch.Cookie)
+	twitch, ok := ur.getUserFromJWT(c, ur.config.Twitch.Cookie)
 	if ok {
 		payload.Twitch.Name = twitch.DisplayName
 		payload.Twitch.Email = twitch.Email
 		payload.Twitch.LoggedIn = true
-		payload.Twitch.Cookie, _ = c.Cookie(ur.config.Twitch.Cookie)
+		payload.Twitch.ID = twitch.ID
 	}
-	dgg, ok := ur.getUser(c, ur.config.Destinygg.Cookie)
+	dgg, ok := ur.getUserFromJWT(c, ur.config.Destinygg.Cookie)
 	if ok {
 		payload.Destinygg.Name = dgg.DisplayName
 		payload.Destinygg.LoggedIn = true
-		payload.Destinygg.Cookie, _ = c.Cookie(ur.config.Destinygg.Cookie)
+		payload.Destinygg.ID = dgg.ID
 	}
 	c.HTML(http.StatusOK, "index.tmpl", payload)
 }
 
 // VerifyPayload ...
 type VerifyPayload struct {
-	ID      string
+	UserID  string
 	Name    string
 	Email   string
 	Valid   bool
 	JWT     string
 	Service string
+	ID      string
 }
 
 func (ur *UnRustleLogs) verifyHandler(c *gin.Context) {
 	payload := VerifyPayload{}
-	if jwtQuery := c.Query("jwt"); jwtQuery != "" {
-		jwtQuery = strings.TrimSpace(jwtQuery)
-		claims, ok := ur.parseJWT(jwtQuery)
-		if ok {
-			payload.ID = claims.ID
-			payload.Name = claims.Name
-			payload.Email = claims.Email
-			payload.JWT = jwtQuery
-			payload.Valid = true
-			payload.Service = claims.Service
+	if id := c.Query("id"); id != "" {
+		id = strings.TrimSpace(id)
+		user, ok := ur.GetUser(id)
+		if !ok {
+			c.HTML(http.StatusBadRequest, "verify.tmpl", payload)
+			return
 		}
+		payload.UserID = user.UserID
+		payload.Name = user.Name
+		payload.Email = user.Email
+		payload.Valid = true
+		payload.Service = user.Service
+		payload.ID = id
 	}
 
 	c.HTML(http.StatusOK, "verify.tmpl", payload)
 }
 
-func (ur *UnRustleLogs) getUser(c *gin.Context, cookiename string) (*jwtClaims, bool) {
+func (ur *UnRustleLogs) getUserFromJWT(c *gin.Context, cookiename string) (*User, bool) {
 	cookie, err := c.Cookie(cookiename)
 	if err != nil {
 		return nil, false
@@ -201,7 +200,7 @@ func (ur *UnRustleLogs) getUser(c *gin.Context, cookiename string) (*jwtClaims, 
 	}
 
 	if claims, ok := token.Claims.(*jwtClaims); ok && token.Valid {
-		return claims, true
+		return ur.GetUser(claims.ID)
 	}
 	return nil, false
 }
