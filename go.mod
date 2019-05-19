@@ -15,6 +15,7 @@ require (
 	github.com/lib/pq v1.1.1 // indirect
 	github.com/nicklaw5/helix v0.5.1
 	github.com/sirupsen/logrus v1.4.1
+	github.com/tensei/dggoauth v0.0.0-20190519140134-bec0985d6dbf
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
 	golang.org/x/net v0.0.0-20190514140710-3ec191127204 // indirect
 	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
