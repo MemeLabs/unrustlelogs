@@ -59,7 +59,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	err := rustle.setupDestinyggClient()
+	err = rustle.setupDestinyggClient()
 	if err != nil {
 		logrus.Fatal(err)
 	}
