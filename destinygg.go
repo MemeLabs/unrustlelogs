@@ -17,12 +17,17 @@ import (
 
 var destinggClient *dggoauth.Client
 
-func (ur *UnRustleLogs) setupDestinyggClient() (*dggoauth.Client, error) {
-	return dggoauth.NewClient(&dggoauth.Options{
+func (ur *UnRustleLogs) setupDestinyggClient() error {
+	c, err := dggoauth.NewClient(&dggoauth.Options{
 		ClientID:     ur.config.Destinygg.ClientID,
 		ClientSecret: ur.config.Destinygg.ClientSecret,
 		RedirectURI:  ur.config.Destinygg.RedirectURL,
 	})
+	if err != nil {
+		return err
+	}
+	destinggClient = c
+	return nil
 }
 
 // DestinyggLoginHandle ...
