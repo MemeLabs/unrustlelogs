@@ -263,6 +263,9 @@ func (ur *UnRustleLogs) hasDggState(state string) (string, bool) {
 	ur.dggStateMutex.RLock()
 	defer ur.dggStateMutex.RUnlock()
 	s, ok := ur.dggStates[state]
+	if !ok {
+		return "", false
+	}
 	return s.verifier, ok
 }
 
