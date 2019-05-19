@@ -249,7 +249,7 @@ func (ur *UnRustleLogs) addDggState(s, verifier string) {
 	defer ur.dggStateMutex.Unlock()
 	ur.dggStates[s] = &state{
 		verifier: verifier,
-		service:  TWITCHSERVICE,
+		service:  DESTINYGGSERVICE,
 		time:     time.Now().UTC(),
 	}
 	// delete dgg state after 5 minutes
@@ -260,6 +260,9 @@ func (ur *UnRustleLogs) addDggState(s, verifier string) {
 }
 
 func (ur *UnRustleLogs) hasDggState(state string) (string, bool) {
+	if strings.TrimSpace(state) == "" {
+		return "", false
+	}
 	ur.dggStateMutex.RLock()
 	defer ur.dggStateMutex.RUnlock()
 	s, ok := ur.dggStates[state]
@@ -290,6 +293,9 @@ func (ur *UnRustleLogs) addTwitchState(s string) {
 }
 
 func (ur *UnRustleLogs) hasTwitchState(state string) bool {
+	if strings.TrimSpace(state) == "" {
+		return false
+	}
 	ur.twitchStateMutex.RLock()
 	defer ur.twitchStateMutex.RUnlock()
 	_, ok := ur.twitchStates[state]
