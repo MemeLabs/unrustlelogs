@@ -8,7 +8,8 @@ cd ./unrustlelogs
 
 mv example.config.toml config.toml
 
-# edit the config.toml
+# edit the config.toml, make sure you provide everything needed
+# otherwise some stuff might break
 vim config.toml
 
 mv ./package/etc/nginx/sites-available/unrustlelogs.conf /etc/nginx/sites-available/unrustlelogs
