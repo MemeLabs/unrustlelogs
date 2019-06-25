@@ -75,6 +75,7 @@ func main() {
 
 	twitch := router.Group("/twitch")
 	{
+		twitch.GET("/", rustle.TwitchIndexHandle)
 		twitch.GET("/login", rustle.TwitchLoginHandle)
 		twitch.GET("/logout", rustle.TwitchLogoutHandle)
 		twitch.GET("/callback", rustle.TwitchCallbackHandle)
@@ -82,6 +83,7 @@ func main() {
 
 	dgg := router.Group("/dgg")
 	{
+		dgg.GET("/", rustle.DestinyggIndexHandle)
 		dgg.GET("/login", rustle.DestinyggLoginHandle)
 		dgg.GET("/logout", rustle.DestinyggLogoutHandle)
 		dgg.GET("/callback", rustle.DestinyggCallbackHandle)
@@ -147,6 +149,11 @@ type Payload struct {
 }
 
 func (ur *UnRustleLogs) indexHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.tmpl", nil)
+}
+
+// TwitchIndexHandle ...
+func (ur *UnRustleLogs) TwitchIndexHandle(c *gin.Context) {
 	payload := Payload{}
 	twitch, ok := ur.getUserFromJWT(c, ur.config.Twitch.Cookie)
 	if ok {
@@ -155,13 +162,19 @@ func (ur *UnRustleLogs) indexHandler(c *gin.Context) {
 		payload.Twitch.LoggedIn = true
 		payload.Twitch.ID = twitch.ID
 	}
+	c.HTML(http.StatusOK, "twitch.tmpl", payload)
+}
+
+// DestinyggIndexHandle ...
+func (ur *UnRustleLogs) DestinyggIndexHandle(c *gin.Context) {
+	payload := Payload{}
 	dgg, ok := ur.getUserFromJWT(c, ur.config.Destinygg.Cookie)
 	if ok {
 		payload.Destinygg.Name = dgg.DisplayName
 		payload.Destinygg.LoggedIn = true
 		payload.Destinygg.ID = dgg.ID
 	}
-	c.HTML(http.StatusOK, "index.tmpl", payload)
+	c.HTML(http.StatusOK, "destinygg.tmpl", payload)
 }
 
 // VerifyPayload ...

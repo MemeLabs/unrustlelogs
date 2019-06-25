@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+    {{ template "header" }}
+    <body>
+        {{ template "navbar" . }}
+        <div class="container my-3">
+            <div class="card text-white bg-dark w-100">
+                <div class="card-header">
+                    Destiny.gg {{ if .Destinygg.LoggedIn }} - {{ .Destinygg.Name }} {{ end }}
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        {{ if .Destinygg.LoggedIn }}
+                            <div class="btn-group" role="group">
+                                <a href="/dgg/logout" role="button" class="btn btn-dark">Logout</a>
+                            </div>
+                        {{ else }}
+                            <a href="/dgg/login" role="button" class="btn twitch">Login</a>
+                        {{ end }}
+                    </div>
+                </div>
+                {{ if .Destinygg.LoggedIn }}
+                    <div class="card-footer">
+                        <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                        <a href="/verify?id={{ .Destinygg.ID }}">https://unrustlelogs.com/verify?id={{ .Destinygg.ID }}</a>
+                    </div>
+                {{ end }}
+            </div>
+        </div>
+        {{ template "scripts" }}
+    </body>
+</html>

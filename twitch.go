@@ -165,5 +165,5 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 	}
 
 	c.SetCookie(ur.config.Twitch.Cookie, t, 604800, "/", fmt.Sprintf("%s", c.Request.Host), c.Request.URL.Scheme == "https", false)
-	c.Redirect(http.StatusFound, "/")
+	c.Redirect(http.StatusFound, "/twitch")
 }

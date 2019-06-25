@@ -8,47 +8,29 @@
                 <div class="card text-white bg-dark" >
                     <div class="card-header">
                         <i class="fab fa-twitch"></i>
-                        Twitch.tv {{ if .Twitch.LoggedIn }} - {{ .Twitch.Name }} {{ end }}
+                        Twitch.tv
                     </div>
-                    <div class="card-body">
-                        <div class="text-center">
-                            {{ if .Twitch.LoggedIn }}
-                                <div class="btn-group" role="group">
-                                    <a href="/twitch/logout" role="button" class="btn btn-dark">Logout</a>
-                                </div>
-                            {{ else }}
-                                <a href="/twitch/login" role="button" class="btn twitch">Login</a>
-                            {{ end }}
+                    <a href="/twitch" class="card-body">
+                        <h2 class="text-center text-white">
+                            Click here if you want Twitch login
+                        </h2>
+                        <div class="text-muted">
+                            (if you requested to delete your twitch.tv logs)
                         </div>
-                    </div>
-                    {{ if .Twitch.LoggedIn }}
-                        <div class="card-footer">
-                            <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
-                            <a href="/verify?id={{ .Twitch.ID }}">https://unrustlelogs.com/verify?id={{ .Twitch.ID }}</a>
-                        </div>
-                    {{ end }}
+                    </a>
                 </div>
-                <div class="card text-white bg-dark">
+                <div class="card text-white bg-dark" style="height: 3rm">
                     <div class="card-header">
-                        Destiny.gg {{ if .Destinygg.LoggedIn }} - {{ .Destinygg.Name }} {{ end }}
+                        Destiny.gg
                     </div>
-                    <div class="card-body">
-                        <div class="text-center">
-                            {{ if .Destinygg.LoggedIn }}
-                                <div class="btn-group" role="group">
-                                    <a href="/dgg/logout" role="button" class="btn btn-dark">Logout</a>
-                                </div>
-                            {{ else }}
-                                <a href="/dgg/login" role="button" class="btn twitch">Login</a>
-                            {{ end }}
+                    <a href="/dgg" class="card-body">
+                        <h2 class="text-center text-white">
+                            Click here if you want Destinygg login
+                        </h2>
+                        <div class="text-muted">
+                            (if you requested to delete your destiny.gg logs)
                         </div>
-                    </div>
-                    {{ if .Destinygg.LoggedIn }}
-                        <div class="card-footer">
-                            <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
-                            <a href="/verify?id={{ .Destinygg.ID }}">https://unrustlelogs.com/verify?id={{ .Destinygg.ID }}</a>
-                        </div>
-                    {{ end }}
+                    </a>
                 </div>
             </div>
         </div>

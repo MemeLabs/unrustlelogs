@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+    {{ template "header" }}
+    <body>
+        {{ template "navbar" . }}
+        <div class="container my-3">
+            <div class="card text-white bg-dark w-100" >
+                <div class="card-header">
+                    <i class="fab fa-twitch"></i>
+                    Twitch.tv {{ if .Twitch.LoggedIn }} - {{ .Twitch.Name }} {{ end }}
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        {{ if .Twitch.LoggedIn }}
+                            <div class="btn-group" role="group">
+                                <a href="/twitch/logout" role="button" class="btn btn-dark">Logout</a>
+                            </div>
+                        {{ else }}
+                            <a href="/twitch/login" role="button" class="btn twitch">Login</a>
+                        {{ end }}
+                    </div>
+                </div>
+                {{ if .Twitch.LoggedIn }}
+                    <div class="card-footer">
+                        <p class="text-muted">After logging in, you need to also email the link below to us from the email address associated with your account. Our email address is support@overrustlelogs.net</p>
+                        <a href="/verify?id={{ .Twitch.ID }}">https://unrustlelogs.com/verify?id={{ .Twitch.ID }}</a>
+                    </div>
+                {{ end }}
+            </div>
+        </div>
+        {{ template "scripts" }}
+    </body>
+</html>

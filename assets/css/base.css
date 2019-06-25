@@ -33,6 +33,11 @@ body {
   border: #ff5722 2px !important;
 }
 
+.card > a {
+  color: white;
+  text-decoration: none;
+}
+
 a {
   color: #ff5722;
 }
