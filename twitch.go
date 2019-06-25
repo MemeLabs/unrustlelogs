@@ -121,7 +121,7 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 	code := c.Query("code")
 	errorMsg := c.Query("error")
 	if errorMsg != "" {
-		c.String(http.StatusUnauthorized, "Authentication could not be completed because the server is misconfigured")
+		c.String(http.StatusBadRequest, errorMsg)
 		return
 	}
 	if code == "" {
