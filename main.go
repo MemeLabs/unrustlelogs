@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/nicklaw5/helix"
+	"github.com/tensei/dggoauth"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -22,9 +24,13 @@ type UnRustleLogs struct {
 	config *Config
 	db     *gorm.DB
 
-	dggStates     map[string]*state
-	dggStateMutex sync.RWMutex
+	dggHTTPClient  *http.Client
+	dggOauthClient *dggoauth.Client
+	dggStates      map[string]*state
+	dggStateMutex  sync.RWMutex
 
+	twitchHTTPClient *http.Client
+	twitchAPIClient  *helix.Client
 	twitchStates     map[string]struct{}
 	twitchStateMutex sync.RWMutex
 }
@@ -128,8 +134,10 @@ func main() {
 // NewUnRustleLogs ...
 func NewUnRustleLogs() *UnRustleLogs {
 	return &UnRustleLogs{
-		dggStates:    make(map[string]*state),
-		twitchStates: make(map[string]struct{}),
+		dggHTTPClient:    &http.Client{},
+		dggStates:        make(map[string]*state),
+		twitchHTTPClient: &http.Client{},
+		twitchStates:     make(map[string]struct{}),
 	}
 }
 

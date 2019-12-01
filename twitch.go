@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -39,23 +38,14 @@ type oauthResponse struct {
 	Scope        []string `json:"scope"`
 }
 
-var twitchHTTPClient = http.Client{}
-
-var twitchClient *helix.Client
-
-func (ur *UnRustleLogs) setupTwitchClient() error {
-	client, err := helix.NewClient(&helix.Options{
+func (ur *UnRustleLogs) setupTwitchClient() (err error) {
+	ur.twitchAPIClient, err = helix.NewClient(&helix.Options{
 		ClientID:     ur.config.Twitch.ClientID,
 		ClientSecret: ur.config.Twitch.ClientSecret,
 		RedirectURI:  ur.config.Twitch.RedirectURL,
 		Scopes:       ur.config.Twitch.Scopes,
 	})
-	if err != nil {
-		logrus.Error(err)
-		return err
-	}
-	twitchClient = client
-	return nil
+	return err
 }
 
 func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*TwitchUser, error) {
@@ -69,24 +59,16 @@ func (ur *UnRustleLogs) getUserByOAuthToken(accessToken string) (*TwitchUser, er
 	req.Header.Add("Client-ID", ur.config.Twitch.ClientID)
 	req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
 
-	response, err := twitchHTTPClient.Do(req)
+	response, err := ur.twitchHTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if response.Body != nil {
-		defer response.Body.Close()
-	}
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	var user TwitchUser
+	defer response.Body.Close()
 
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	var user TwitchUser
+	err = json.NewDecoder(response.Body).Decode(&user)
+
+	return &user, err
 }
 
 // TwitchLoginHandle ...
@@ -94,7 +76,7 @@ func (ur *UnRustleLogs) TwitchLoginHandle(c *gin.Context) {
 	state := uniuri.New()
 	ur.addTwitchState(state)
 
-	url := twitchClient.GetAuthorizationURL(state, true)
+	url := ur.twitchAPIClient.GetAuthorizationURL(state, true)
 
 	c.Header("Location", url)
 	c.Redirect(http.StatusFound, url)
@@ -129,7 +111,7 @@ func (ur *UnRustleLogs) TwitchCallbackHandle(c *gin.Context) {
 		return
 	}
 
-	oauth, err := twitchClient.GetUserAccessToken(code)
+	oauth, err := ur.twitchAPIClient.GetUserAccessToken(code)
 	if err != nil {
 		logrus.Error(err)
 		c.String(http.StatusUnauthorized, "Failed to get token from OAuth exchange code")

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -15,25 +14,19 @@ import (
 	"github.com/tensei/dggoauth"
 )
 
-var destinggClient *dggoauth.Client
-
-func (ur *UnRustleLogs) setupDestinyggClient() error {
-	c, err := dggoauth.NewClient(&dggoauth.Options{
+func (ur *UnRustleLogs) setupDestinyggClient() (err error) {
+	ur.dggOauthClient, err = dggoauth.NewClient(&dggoauth.Options{
 		ClientID:     ur.config.Destinygg.ClientID,
 		ClientSecret: ur.config.Destinygg.ClientSecret,
 		RedirectURI:  ur.config.Destinygg.RedirectURL,
 	})
-	if err != nil {
-		return err
-	}
-	destinggClient = c
-	return nil
+	return err
 }
 
 // DestinyggLoginHandle ...
 func (ur *UnRustleLogs) DestinyggLoginHandle(c *gin.Context) {
 	state := uniuri.NewLen(60)
-	url, verifier := destinggClient.GetAuthorizationURL(state)
+	url, verifier := ur.dggOauthClient.GetAuthorizationURL(state)
 	ur.addDggState(state, verifier)
 
 	c.Header("Location", url)
@@ -50,7 +43,7 @@ func (ur *UnRustleLogs) DestinyggCallbackHandle(c *gin.Context) {
 	}
 	go ur.deleteDggState(state)
 	code := c.Query("code")
-	access, err := destinggClient.GetAccessToken(code, verifier)
+	access, err := ur.dggOauthClient.GetAccessToken(code, verifier)
 	if err != nil {
 		logrus.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -105,22 +98,16 @@ type DestinyggUser struct {
 
 func (ur *UnRustleLogs) getDggUser(accessToken string) (*DestinyggUser, error) {
 	dggURL := fmt.Sprintf("https://destiny.gg/api/userinfo?token=%s", accessToken)
-	response, err := http.Get(dggURL)
+	response, err := ur.dggHTTPClient.Get(dggURL)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
 	var userinfo DestinyggUser
-	err = json.Unmarshal(body, &userinfo)
-	if err != nil {
-		return nil, err
-	}
-	return &userinfo, nil
+	err = json.NewDecoder(response.Body).Decode(&userinfo)
+
+	return &userinfo, err
 }
 
 // DestinyggLogoutHandle ...
